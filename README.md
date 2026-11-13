@@ -9,7 +9,7 @@ The portal covers the four user groups from the migration requirements:
 | User group | Page | Syncfusion components |
 |---|---|---|
 | **Content Team** | Content Management | `SfRichTextEditor` (advanced toolbar, image upload & browse, tables, links, fonts, colors), `SfGrid`, `SfTextBox`, `SfDropDownList`, `SfButton` |
-| **Learners & Professors** | Learning Content | `SfRichTextEditor` (simplified toolbar) + server-side HTML-to-PDF (Blink engine) |
+| **Learners & Professors** | Learning Content | `SfRichTextEditor` (simplified toolbar) + Export to PDF |
 | **Client Managers** | Reports | `SfGrid` (filtering, paging, sorting), `SfChart`, `SfAccumulationChart`, `SfPivotView` |
 | **Administrative Team** | Course Scheduling, Query Builder | `SfSchedule` (Day/Week/Month, CRUD, recurrence), `SfQueryBuilder` wired to `SfGrid` |
 
