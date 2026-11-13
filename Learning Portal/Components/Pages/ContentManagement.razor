@@ -1,0 +1,202 @@
+@page "/content-management"
+@rendermode InteractiveServer
+@inject SampleDataService Data
+@inject IJSRuntime JS
+
+<PageTitle>Content Management — Professional Learning Portal</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Content Management</h1>
+        <p class="page-subtitle">Advanced rich text editor for the content team — formatting, tables, hyperlinks, and image upload/browse.</p>
+    </div>
+    <div class="page-header-actions">
+        <SfButton IsPrimary="true" @onclick="SaveContent">Save Article</SfButton>
+    </div>
+</div>
+
+<div class="panel" style="margin-bottom:16px">
+    <h2 class="panel-title">Article Library</h2>
+    <SfGrid @ref="_grid" TValue="LearningContentItem" DataSource="@_items" AllowPaging="true" AllowSorting="true" Height="280">
+        <GridEvents TValue="LearningContentItem" RowSelected="@OnRowSelected"></GridEvents>
+        <GridPageSettings PageSize="5"></GridPageSettings>
+        <GridColumns>
+            <GridColumn Field="@nameof(LearningContentItem.Id)" HeaderText="ID" Width="70" IsPrimaryKey="true"></GridColumn>
+            <GridColumn Field="@nameof(LearningContentItem.Title)" HeaderText="Title" Width="260"></GridColumn>
+            <GridColumn Field="@nameof(LearningContentItem.Author)" HeaderText="Author" Width="160"></GridColumn>
+            <GridColumn Field="@nameof(LearningContentItem.Status)" HeaderText="Status" Width="110"></GridColumn>
+            <GridColumn Field="@nameof(LearningContentItem.LastUpdated)" HeaderText="Last Updated" Format="d" Type="Syncfusion.Blazor.Grids.ColumnType.DateTime" Width="140"></GridColumn>
+        </GridColumns>
+    </SfGrid>
+</div>
+
+<div class="card-grid" style="grid-template-columns:1fr 340px">
+    <div class="panel">
+        <h2 class="panel-title">Edit Article — <span id="rte-title-label">@(_selected?.Title ?? "New Article")</span></h2>
+        <SfRichTextEditor @ref="_rte" @bind-Value="_html" Height="520">
+            <RichTextEditorToolbarSettings Items="@AdvancedToolbar"></RichTextEditorToolbarSettings>
+            <RichTextEditorImageSettings SaveUrl="/learning-portal/api/upload/rte-image" Path="/learning-portal/uploads/" AllowedTypes="@ImageTypes"></RichTextEditorImageSettings>
+            <RichTextEditorQuickToolbarSettings Image="@ImageQuickToolbar"></RichTextEditorQuickToolbarSettings>
+            <RichTextEditorTableSettings></RichTextEditorTableSettings>
+            <p>Start writing your article…</p>
+        </SfRichTextEditor>
+        <div class="editor-actions">
+            <SfButton IsPrimary="true" @onclick="SaveContent">Save Article</SfButton>
+            <SfButton @onclick="NewArticle">New</SfButton>
+            <SfButton @onclick="DeleteArticle">Delete</SfButton>
+        </div>
+    </div>
+    <div>
+        <div class="panel" style="margin-bottom:16px">
+            <h2 class="panel-title">Article details</h2>
+            <SfTextBox @bind-Value="_title" Placeholder="Article title"></SfTextBox>
+            <SfTextBox @bind-Value="_author" Placeholder="Author" CssClass="field-gap"></SfTextBox>
+            <SfDropDownList @bind-Value="_status" TItem="string" TValue="string" DataSource="@StatusOptions" Placeholder="Status" CssClass="field-gap"></SfDropDownList>
+            <p class="hint">Select a row in the library to load it into the editor, or click <b>New</b> to start a fresh article.</p>
+        </div>
+        <div class="panel">
+            <h2 class="panel-title">Editor capabilities</h2>
+            <ul class="feature-list">
+                <li>Full formatting: fonts, colors, alignment, lists</li>
+                <li>Tables, hyperlinks, images with upload</li>
+                <li>Image browsing via server file store (/uploads)</li>
+                <li>Extensible toolbar for future custom tools</li>
+            </ul>
+        </div>
+        @if (_toast != null)
+        {
+            <div class="toast-note @(_toastIsError ? "err" : "")" role="status">@_toast</div>
+        }
+    </div>
+</div>
+
+@code {
+    private SfRichTextEditor? _rte;
+    private SfGrid<LearningContentItem>? _grid;
+    private List<LearningContentItem> _items = [];
+    private LearningContentItem? _selected;
+    private string _html = string.Empty;
+    private string _title = string.Empty;
+    private string _author = string.Empty;
+    private string _status = "Draft";
+    private string? _toast;
+    private bool _toastIsError;
+
+    private List<string> ImageTypes => [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"];
+    private List<string> StatusOptions => ["Draft", "In Review", "Published"];
+    private List<ImageToolbarItemModel> ImageQuickToolbar =>
+    [
+        new ImageToolbarItemModel { Command = ImageToolbarCommand.Replace },
+        new ImageToolbarItemModel { Command = ImageToolbarCommand.Align },
+        new ImageToolbarItemModel { Command = ImageToolbarCommand.Caption },
+        new ImageToolbarItemModel { Command = ImageToolbarCommand.AltText },
+        new ImageToolbarItemModel { Command = ImageToolbarCommand.Dimension },
+        new ImageToolbarItemModel { Command = ImageToolbarCommand.InsertLink },
+        new ImageToolbarItemModel { Command = ImageToolbarCommand.Display },
+        new ImageToolbarItemModel { Command = ImageToolbarCommand.Remove },
+    ];
+
+    private List<ToolbarItemModel> AdvancedToolbar =>
+    [
+        new ToolbarItemModel { Command = ToolbarCommand.Bold },
+        new ToolbarItemModel { Command = ToolbarCommand.Italic },
+        new ToolbarItemModel { Command = ToolbarCommand.Underline },
+        new ToolbarItemModel { Command = ToolbarCommand.StrikeThrough },
+        new ToolbarItemModel { Command = ToolbarCommand.Separator },
+        new ToolbarItemModel { Command = ToolbarCommand.FontName },
+        new ToolbarItemModel { Command = ToolbarCommand.FontSize },
+        new ToolbarItemModel { Command = ToolbarCommand.FontColor },
+        new ToolbarItemModel { Command = ToolbarCommand.BackgroundColor },
+        new ToolbarItemModel { Command = ToolbarCommand.Separator },
+        new ToolbarItemModel { Command = ToolbarCommand.Formats },
+        new ToolbarItemModel { Command = ToolbarCommand.Alignments },
+        new ToolbarItemModel { Command = ToolbarCommand.NumberFormatList },
+        new ToolbarItemModel { Command = ToolbarCommand.BulletFormatList },
+        new ToolbarItemModel { Command = ToolbarCommand.Separator },
+        new ToolbarItemModel { Command = ToolbarCommand.CreateTable },
+        new ToolbarItemModel { Command = ToolbarCommand.CreateLink },
+        new ToolbarItemModel { Command = ToolbarCommand.Image },
+        new ToolbarItemModel { Command = ToolbarCommand.Separator },
+        new ToolbarItemModel { Command = ToolbarCommand.SourceCode },
+        new ToolbarItemModel { Command = ToolbarCommand.ClearFormat },
+        new ToolbarItemModel { Command = ToolbarCommand.Undo },
+        new ToolbarItemModel { Command = ToolbarCommand.Redo },
+        new ToolbarItemModel { Command = ToolbarCommand.Separator },
+        new ToolbarItemModel { Command = ToolbarCommand.FullScreen },
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await Data.GetContentsAsync();
+    }
+
+    private void OnRowSelected(RowSelectEventArgs<LearningContentItem> args)
+    {
+        if (args.Data is null) return;
+        _selected = args.Data;
+        _title = args.Data.Title;
+        _author = args.Data.Author;
+        _status = args.Data.Status;
+        _html = args.Data.HtmlContent;
+        _toast = null;
+    }
+
+    private void NewArticle()
+    {
+        _selected = null;
+        _title = string.Empty;
+        _author = string.Empty;
+        _status = "Draft";
+        _html = "<p>Start writing your article…</p>";
+    }
+
+    private async Task SaveContent()
+    {
+        if (string.IsNullOrWhiteSpace(_title))
+        {
+            ShowToast("Please enter an article title.", isError: true);
+            return;
+        }
+        var item = _selected ?? new LearningContentItem();
+        item.Title = _title.Trim();
+        item.Author = string.IsNullOrWhiteSpace(_author) ? "Content Team" : _author.Trim();
+        item.Status = _status;
+        item.Summary = TrimHtml(_html);
+        item.HtmlContent = _html;
+
+        Data.UpsertContent(item);
+        _items = await Data.GetContentsAsync();
+        _selected = item;
+        ShowToast($"Saved “{item.Title}” ({item.Status}).");
+    }
+
+    private async Task DeleteArticle()
+    {
+        if (_selected is null)
+        {
+            ShowToast("Select an article in the library first.", isError: true);
+            return;
+        }
+        Data.DeleteContent(_selected.Id);
+        _items = await Data.GetContentsAsync();
+        _selected = null;
+        _html = string.Empty;
+        _title = string.Empty;
+        ShowToast("Article deleted.");
+    }
+
+    private void ShowToast(string message, bool isError = false)
+    {
+        _toast = message;
+        _toastIsError = isError;
+    }
+
+    private static string TrimHtml(string html)
+    {
+        var text = html?.Replace("<", " <") ?? string.Empty;
+        var plain = System.Text.RegularExpressions.Regex.Replace(text, "<[^>]+>", string.Empty);
+        plain = System.Net.WebUtility.HtmlDecode(plain);
+        plain = System.Text.RegularExpressions.Regex.Replace(plain, @"\s+", " ").Trim();
+        return plain.Length <= 160 ? plain : plain[..160] + "…";
+    }
+}

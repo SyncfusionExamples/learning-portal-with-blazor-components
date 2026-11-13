@@ -1,0 +1,265 @@
+/* ==========================================================================
+   Professional Learning Portal — dashboard shell (layout-only styles)
+   Shared page primitives live in wwwroot/app.css (global).
+   ========================================================================== */
+
+:root {
+    --lp-sidebar-bg: #0f2438;
+    --lp-sidebar-text: #c4d3e1;
+    --lp-sidebar-active: #0b5cab;
+    --lp-topbar-bg: #0b5cab;
+    --lp-sidebar-width: 264px;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+.app-shell {
+    display: grid;
+    grid-template-columns: var(--lp-sidebar-width) 1fr;
+    grid-template-areas:
+        "sidebar topbar"
+        "sidebar main";
+    min-height: 100vh;
+    background: #f4f6fa;
+}
+
+/* --- Sidebar ---------------------------------------------------------- */
+
+.app-sidebar {
+    grid-area: sidebar;
+    background: linear-gradient(180deg, #0f2438 0%, #0b1a2b 100%);
+    color: var(--lp-sidebar-text);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 40;
+}
+
+.brand {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 18px 18px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #0b5cab;
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.brand-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: #fff;
+}
+
+.brand-sub {
+    font-size: 11px;
+    color: #8fa3b8;
+    margin-top: 1px;
+}
+
+.side-nav {
+    flex: 1;
+    padding: 10px 12px 20px;
+}
+
+.nav-section {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: #6f8aa0;
+    margin: 18px 10px 6px;
+    font-weight: 600;
+}
+
+/* NavLink renders the <a> inside its own component scope, so ::deep is
+   required for the isolated stylesheet to reach it. Literal colors are
+   used deliberately — a var() that fails to resolve would fall back to
+   the browser default (near-invisible dark blue on the dark sidebar). */
+::deep .side-link {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    color: #c4d3e1;
+    text-decoration: none;
+    font-size: 13.5px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    margin-bottom: 2px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+    ::deep .side-link:hover,
+    ::deep .side-link:focus-visible {
+        background: rgba(255, 255, 255, 0.07);
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    ::deep .side-link.active {
+        background: #0b5cab;
+        color: #ffffff;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+.side-ico {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.sidebar-footer {
+    padding: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-chip {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #1b3a5c;
+    color: #cfe3f5;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.user-name { font-size: 12.5px; color: #fff; }
+.user-role { font-size: 11px; color: #8fa3b8; }
+
+/* --- Top bar: distinct colored header band ----------------------------- */
+
+.app-topbar {
+    grid-area: topbar;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(90deg, #0b5cab 0%, #084a8c 100%);
+    border-bottom: 1px solid #08417a;
+    padding: 12px 22px;
+    min-height: 58px;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    box-shadow: 0 2px 8px rgba(8, 42, 79, 0.25);
+}
+
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    background: none;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.menu-toggle-line {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+}
+
+.topbar-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.topbar-badge {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 600;
+    color: #dcebfa;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+/* --- Main --------------------------------------------------------------- */
+
+.app-main {
+    grid-area: main;
+    padding: 24px;
+    min-width: 0;
+}
+
+/* Responsive: collapse sidebar below 900px ------------------------------ */
+
+.sidebar-backdrop { display: none; }
+
+@media (max-width: 900px) {
+    .app-shell {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "topbar"
+            "main";
+    }
+
+    .app-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: var(--lp-sidebar-width);
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: none;
+    }
+
+    .app-sidebar.open { transform: translateX(0); box-shadow: 0 0 0 100vmax rgba(0,0,0,0.35); }
+
+    .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 35;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+
+    .sidebar-backdrop.visible { opacity: 1; pointer-events: auto; }
+
+    .menu-toggle { display: flex; }
+
+    .app-main { padding: 16px; }
+}

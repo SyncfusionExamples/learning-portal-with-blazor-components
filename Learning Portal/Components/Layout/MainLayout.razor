@@ -1,0 +1,75 @@
+@inherits LayoutComponentBase
+
+<div class="app-shell">
+    <aside class="app-sidebar @(SidebarOpen ? "open" : "")" id="appSidebar">
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true">LP</span>
+            <div>
+                <div class="brand-name">Learning Portal</div>
+                <div class="brand-sub">Professional Learning Platform</div>
+            </div>
+        </div>
+        <nav class="side-nav" aria-label="Main navigation">
+            <div class="nav-section">Overview</div>
+            <NavLink class="side-link" href="/" Match="NavLinkMatch.All">
+                <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg> Dashboard
+            </NavLink>
+            <div class="nav-section">Content Team</div>
+            <NavLink class="side-link" href="/content-management">
+                <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Content Management
+            </NavLink>
+            <div class="nav-section">Learners &amp; Professors</div>
+            <NavLink class="side-link" href="/learning-content">
+                <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg> Learning Content &amp; PDF
+            </NavLink>
+            <div class="nav-section">Client Managers</div>
+            <NavLink class="side-link" href="/reports">
+                <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg> Reports
+            </NavLink>
+            <div class="nav-section">Administration</div>
+            <NavLink class="side-link" href="/course-scheduling">
+                <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg> Course Scheduling
+            </NavLink>
+            <NavLink class="side-link" href="/query-builder">
+                <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> Query Builder
+            </NavLink>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-chip">
+                <span class="user-avatar" aria-hidden="true">RS</span>
+                <div>
+                    <div class="user-name">Ravi Shankar</div>
+                    <div class="user-role">Portal Administrator</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+    <div class="sidebar-backdrop @(SidebarOpen ? "visible" : "")" @onclick="ToggleSidebar" aria-hidden="true"></div>
+
+    <header class="app-topbar">
+        <button type="button" class="menu-toggle" @onclick="ToggleSidebar" aria-label="Toggle navigation menu">
+            <span class="menu-toggle-line"></span>
+            <span class="menu-toggle-line"></span>
+            <span class="menu-toggle-line"></span>
+            <span class="menu-toggle-line"></span>
+        </button>
+        <div class="topbar-title">Professional Learning Management Portal</div>
+        <div class="topbar-badge">Syncfusion Blazor + .NET 10 POC</div>
+    </header>
+
+    <main class="app-main">
+        @Body
+    </main>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">✖</span>
+</div>
+
+@code {
+    private bool SidebarOpen { get; set; }
+
+    private void ToggleSidebar() => SidebarOpen = !SidebarOpen;
+}

@@ -1,0 +1,49 @@
+@page "/course-scheduling"
+@rendermode InteractiveServer
+@inject SampleDataService Data
+
+<PageTitle>Course Scheduling — Professional Learning Portal</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Course Scheduling</h1>
+        <p class="page-subtitle">Calendar for scheduling course sections — Day, Week, and Month views with recurring sessions.</p>
+    </div>
+    <div class="page-header-actions">
+        <span class="topbar-badge">@_events.Count course sections</span>
+    </div>
+</div>
+
+<div class="panel">
+    <SfSchedule @ref="_schedule" TValue="CourseSectionEvent" Height="650px" @bind-SelectedDate="_selectedDate">
+        <ScheduleEvents TValue="CourseSectionEvent"></ScheduleEvents>
+        <ScheduleViews>
+            <ScheduleView Option="Syncfusion.Blazor.Schedule.View.Day"></ScheduleView>
+            <ScheduleView Option="Syncfusion.Blazor.Schedule.View.Week"></ScheduleView>
+            <ScheduleView Option="Syncfusion.Blazor.Schedule.View.Month"></ScheduleView>
+        </ScheduleViews>
+        <ScheduleEventSettings TValue="CourseSectionEvent" DataSource="@_events">
+            <ScheduleField Id="@nameof(CourseSectionEvent.Id)">
+                <FieldSubject Name="@nameof(CourseSectionEvent.Subject)" Title="Course Section"></FieldSubject>
+                <FieldLocation Name="@nameof(CourseSectionEvent.Location)" Title="Room / Platform"></FieldLocation>
+                <FieldDescription Name="@nameof(CourseSectionEvent.Description)" Title="Notes"></FieldDescription>
+                <FieldStartTime Name="@nameof(CourseSectionEvent.StartTime)"></FieldStartTime>
+                <FieldEndTime Name="@nameof(CourseSectionEvent.EndTime)"></FieldEndTime>
+                <FieldIsAllDay Name="@nameof(CourseSectionEvent.IsAllDay)"></FieldIsAllDay>
+                <FieldRecurrenceRule Name="@nameof(CourseSectionEvent.RecurrenceRule)"></FieldRecurrenceRule>
+                <FieldRecurrenceId Name="@nameof(CourseSectionEvent.RecurrenceID)"></FieldRecurrenceId>
+            </ScheduleField>
+        </ScheduleEventSettings>
+    </SfSchedule>
+</div>
+
+@code {
+    private SfSchedule<CourseSectionEvent>? _schedule;
+    private List<CourseSectionEvent> _events = new();
+    private DateTime _selectedDate = DateTime.Today;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _events = await Data.GetEventsAsync();
+    }
+}

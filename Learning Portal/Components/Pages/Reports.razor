@@ -1,0 +1,126 @@
+@page "/reports"
+@rendermode InteractiveServer
+@using Syncfusion.Blazor.PivotView
+@inject SampleDataService Data
+
+<PageTitle>Reports — Professional Learning Portal</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Reports</h1>
+        <p class="page-subtitle">Reporting dashboard for client managers — course enrollment, learner progress, and completion analytics.</p>
+    </div>
+    <div class="page-header-actions">
+        <span class="topbar-badge">Data refreshed: @DateTime.Now.ToString("d")</span>
+    </div>
+</div>
+
+<div class="panel" style="margin-bottom:16px">
+    <div class="report-tabs" role="tablist">
+        <button type="button" class="report-tab @(ActiveTab == 0 ? "active" : "")" @onclick="() => SetTab(0)">Enrollment Detail</button>
+        <button type="button" class="report-tab @(ActiveTab == 1 ? "active" : "")" @onclick="() => SetTab(1)">Graphical Reports</button>
+        <button type="button" class="report-tab @(ActiveTab == 2 ? "active" : "")" @onclick="() => SetTab(2)">Pivot Analysis</button>
+    </div>
+
+    @if (ActiveTab == 0)
+    {
+        <div class="panel" style="margin:14px;border:none">
+            <h2 class="panel-title">Course Enrollments</h2>
+            <SfGrid @ref="_grid" TValue="Enrollment" DataSource="@_enrollments" AllowPaging="true" AllowSorting="true" AllowFiltering="true">
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+                <GridPageSettings PageSize="12"></GridPageSettings>
+                <GridColumns>
+                    <GridColumn Field="@nameof(Enrollment.LearnerName)" HeaderText="Learner" Width="150"></GridColumn>
+                    <GridColumn Field="@nameof(Enrollment.CourseTitle)" HeaderText="Course" Width="240"></GridColumn>
+                    <GridColumn Field="@nameof(Enrollment.Category)" HeaderText="Category" Width="120"></GridColumn>
+                    <GridColumn Field="@nameof(Enrollment.Instructor)" HeaderText="Instructor" Width="150"></GridColumn>
+                    <GridColumn Field="@nameof(Enrollment.District)" HeaderText="District" Width="130"></GridColumn>
+                    <GridColumn Field="@nameof(Enrollment.EnrolledDate)" HeaderText="Enrolled" Format="d" Type="Syncfusion.Blazor.Grids.ColumnType.DateTime" Width="110"></GridColumn>
+                    <GridColumn Field="@nameof(Enrollment.ProgressPercent)" HeaderText="Progress %" Width="110"></GridColumn>
+                    <GridColumn Field="@nameof(Enrollment.Completed)" HeaderText="Completed" Width="110" DisplayAsCheckBox="true"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </div>
+    }
+    else if (ActiveTab == 1)
+    {
+        <div class="card-grid" style="grid-template-columns:1fr 1fr">
+            <div class="panel">
+                <h2 class="panel-title">Enrollment by Category</h2>
+                <SfAccumulationChart Title=" " Width="100%" Height="340px">
+                    <AccumulationChartSeriesCollection>
+                        <AccumulationChartSeries XName="Category" YName="Count" Name="Enrollment" DataSource="@_categoryData"
+                                            Type="Syncfusion.Blazor.Charts.AccumulationType.Pie">
+                            <AccumulationDataLabelSettings Visible="true" Position="Syncfusion.Blazor.Charts.AccumulationLabelPosition.Outside">
+                                <AccumulationChartDataLabelFont Color="#1b2733" Size="12px" FontWeight="600"></AccumulationChartDataLabelFont>
+                            </AccumulationDataLabelSettings>
+                        </AccumulationChartSeries>
+                    </AccumulationChartSeriesCollection>
+                    <AccumulationChartLegendSettings Position="Syncfusion.Blazor.Charts.LegendPosition.Bottom"></AccumulationChartLegendSettings>
+                </SfAccumulationChart>
+            </div>
+            <div class="panel">
+                <h2 class="panel-title">Average Progress by Category</h2>
+                <SfChart Title=" " Width="100%" Height="340px">
+                    <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category"></ChartPrimaryXAxis>
+                    <ChartSeriesCollection>
+                        <ChartSeries Type="Syncfusion.Blazor.Charts.ChartSeriesType.Bar" XName="Category" YName="AvgProgress" DataSource="@_categoryData">
+                            <ChartMarker Visible="true"></ChartMarker>
+                        </ChartSeries>
+                    </ChartSeriesCollection>
+                </SfChart>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="panel" style="margin:14px;border:none">
+            <h2 class="panel-title">Enrollment Analysis (Pivot Table)</h2>
+            <SfPivotView TValue="Enrollment">
+                <PivotViewDataSourceSettings DataSource="@_enrollments" ExpandAll="false">
+                    <PivotViewColumns>
+                        <PivotViewColumn Name="@nameof(Enrollment.Category)"></PivotViewColumn>
+                    </PivotViewColumns>
+                    <PivotViewRows>
+                        <PivotViewRow Name="@nameof(Enrollment.District)"></PivotViewRow>
+                    </PivotViewRows>
+                    <PivotViewValues>
+                        <PivotViewValue Name="@nameof(Enrollment.ProgressPercent)" Type="Syncfusion.Blazor.PivotView.SummaryTypes.Avg"></PivotViewValue>
+                        <PivotViewValue Name="@nameof(Enrollment.Completed)" Type="Syncfusion.Blazor.PivotView.SummaryTypes.Count"></PivotViewValue>
+                    </PivotViewValues>
+                </PivotViewDataSourceSettings>
+            </SfPivotView>
+        </div>
+    }
+</div>
+
+@code {
+    private int ActiveTab = 0;
+    private SfGrid<Enrollment>? _grid;
+    private List<Enrollment> _enrollments = new();
+    private List<CategoryReportPoint> _categoryData = new();
+
+    private class CategoryReportPoint
+    {
+        public string Category { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public double AvgProgress { get; set; }
+    }
+
+    private void SetTab(int index) => ActiveTab = index;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _enrollments = await Data.GetEnrollmentsAsync();
+        _categoryData = _enrollments
+            .GroupBy(e => e.Category)
+            .Select(g => new CategoryReportPoint
+            {
+                Category = g.Key,
+                Count = g.Count(),
+                AvgProgress = Math.Round(g.Average(e => e.ProgressPercent), 1)
+            })
+            .ToList();
+    }
+}
+
