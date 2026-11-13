@@ -1,6 +1,6 @@
 # Professional Learning Portal — Syncfusion Blazor .NET 10 POC
 
-A proof-of-concept web application demonstrating how **Syncfusion Blazor components** running on **.NET 10** can replace an existing ASP.NET Web Forms (.NET Framework 4.8) website for an online professional-learning provider serving educators and staff.
+A proof-of-concept web application demonstrating how **Syncfusion Blazor components** running on **.NET 10** can replace an existing website for an online professional-learning provider serving educators and staff.
 
 ## Who it serves
 
@@ -15,38 +15,9 @@ The portal covers the four user groups from the migration requirements:
 
 A shared **Dashboard** page gives an at-a-glance overview with KPI cards and charts.
 
-## Project structure
-
-```
-LearningPortal.sln
-└── src/LearningPortal/
-    ├── Program.cs                  # DI, endpoints (image upload, HTML→PDF), middleware
-    ├── Models/CourseModels.cs      # Course, Enrollment, CourseSectionEvent, LearningContentItem, …
-    ├── Services/
-    │   ├── SampleDataService.cs    # In-memory realistic seed data + CRUD
-    │   ├── ImageStorageService.cs  # RTE image upload storage (wwwroot/uploads)
-    │   └── PdfExportService.cs     # Syncfusion Blink HTML-to-PDF conversion
-    ├── Components/
-    │   ├── App.razor               # Host page — Syncfusion bootstrap5 theme + download helper
-    │   ├── Routes.razor
-    │   ├── _Imports.razor          # Syncfusion namespaces
-    │   ├── Layout/MainLayout.razor # Responsive dashboard shell (sidebar + topbar)
-    │   └── Pages/
-    │       ├── Home.razor              # Dashboard (KPIs, charts, recent enrollments)
-    │       ├── ContentManagement.razor # Advanced RTE + article library grid
-    │       ├── LearningContent.razor   # Basic RTE + PDF export + drafts
-    │       ├── Reports.razor           # Grid + pie/bar charts + pivot table
-    │       ├── CourseScheduling.razor  # Schedule with CRUD + recurrence
-    │       └── QueryBuilderPage.razor  # Query Builder → filtered grid
-    └── wwwroot/
-        ├── app.css                # Shared page styles
-        └── uploads/               # RTE-uploaded images (created at runtime)
-```
-
 ## Prerequisites
 
 - **.NET 10 SDK** (or newer SDK that can target `net10.0` — the SDK 11.0.100 used during development works)
-- **Windows** (the HTML-to-PDF converter ships Windows Blink binaries)
 - A Syncfusion Blazor license key (free community license available) — see *Licensing* below
 
 ### NuGet packages (Syncfusion 35.1.46)
@@ -62,23 +33,20 @@ Since version 35, Syncfusion ships **modular packages** instead of the monolithi
 | `Syncfusion.Blazor.Schedule` | Course scheduling calendar |
 | `Syncfusion.Blazor.QueryBuilder` | Dynamic query building |
 | `Syncfusion.Blazor.RichTextEditor` | Both rich text editors |
-| `Syncfusion.Blazor.Inputs` / `Buttons` / `Dropdowns` / `Popups` / `Navigations` / `Lists` / `Data` / `Spinner` / `SplitButtons` / `Calendars` / `Layouts` | Support infrastructure |
-| `Syncfusion.HtmlToPdfConverter.Net.Windows` | Server-side HTML→PDF (Blink engine) |
+| `Syncfusion.Blazor.Inputs` / `Buttons` / `Dropdowns` / `Popups` / `Navigations` / `Lists` / `Data` / `Spinner` / `SplitButtons` / `Calendars` / `Layouts` | Support components |
+| `Syncfusion.Blazor.Themes` | `bootstrap5.css` theme |
 
-All at version **35.1.46**, declared in `src/LearningPortal/LearningPortal.csproj`.
+All at version **35.1.46**
 
 ## Setup & run
 
+From this folder:
+
 ```bash
-cd "D:/POC/Blazor NET10"
-dotnet build src/LearningPortal
-
-dotnet run --project src/LearningPortal --urls "http://localhost:5080"
+dotnet build
+dotnet run
 ```
-
-Then open **http://localhost:5080**.
-
-> **Note:** The first `dotnet build` copies the Blink rendering-engine binaries to `bin/…/runtimes/win-x64/native` via a NuGet build target. The PDF export requires these; if PDF export reports missing binaries, rebuild once.
+With the default launch profile the app listens on `http://localhost:5083` (and `https://localhost:7288`).
 
 ### Syncfusion license key (required for production, optional in development)
 
@@ -107,7 +75,7 @@ KPI cards (total enrollments, completions, active courses, average progress), a 
 ### 3. Learning Content (`/learning-content`) — Learners & Professors
 - **Simplified RTE toolbar** — bold, italic, underline, formats, alignments, lists, link, image, table, undo/redo, clear format.
 - **Save Draft** — stores content drafts in the sample-data service; click a draft to reload it into the editor.
-- **Download as PDF** — the editor HTML is POSTed to `/api/export/html-to-pdf`; the Syncfusion Blink engine renders it server-side into a pixel-perfect PDF that preserves formatting, images, and tables (verified: tables render, uploaded images embed as PDF image XObjects). The file downloads via a small JS helper (`lpDownloadFile`).
+- **Export to PDF** uses the RTE's built-in `ExportPdf` toolbar command (`RichTextEditorExportPdf`), which calls the Syncfusion-hosted service URL configured on the page. The server needs outbound internet access, and editor content is sent to that service. For production or sensitive content, point `ServiceUrl` at a self-hosted service.
 
 ### 4. Reports (`/reports`) — Client Managers
 Three switchable views:
@@ -126,30 +94,3 @@ Three switchable views:
 - **AND/OR groups** with nested condition groups.
 - **Run Query** applies the built predicate (`GetFilteredRecordsAsync`) and streams the filtered rows into the results `SfGrid`; **Reset** clears the query.
 
-## Architecture notes
-
-- **Render mode:** Blazor Web App with Interactive Server render mode (`@rendermode InteractiveServer` per page) — a natural Web Forms migration path since state lives on the server.
-- **Dependency injection:** `SampleDataService` (singleton — in-memory CRUD state), `ImageStorageService`, `PdfExportService`, and a named `HttpClient` for internal calls.
-- **Realistic sample data:** 10 courses, 48 enrollments across 8 districts, seeded article library, and ~10 calendar events including recurring series — all in `SampleDataService`, swappable for a real data layer.
-- **Responsive design:** the sidebar collapses to a slide-over drawer under 960px; grid/card layouts are fluid.
-- **Security:** upload endpoint enforces extension allow-list + 5 MB size cap; minimal APIs return typed `Results` responses; antiforgery stays on for Razor components.
-
-## Migration mapping (Web Forms → Blazor)
-
-| Web Forms pattern | Blazor / Syncfusion replacement |
-|---|---|
-| ASPX page + code-behind | Razor component with `@code` block |
-| `<asp:GridView>` | `SfGrid` |
-| `<asp:Calendar>` | `SfSchedule` |
-| Custom HTML editor ( Telerik / CKEditor ) | `SfRichTextEditor` |
-| SSRS / RDLC reports | `SfChart`, `SfPivotView`, `SfGrid` exports |
-| Postback events | Blazor EventCallbacks (`GridEvents`, `ScheduleEvents`) |
-| Session state | DI services (scoped/singleton) |
-| Master pages | `MainLayout` + nested layouts |
-
-## Verified in this build
-
-- All six pages return HTTP 200 and render their Syncfusion components.
-- HTML→PDF endpoint produces valid PDFs (`%PDF` header, `%%EOF` trailer), including embedded images (image XObject present) and tables.
-- Image upload endpoint stores files, returns editor-compatible JSON, and files are served back at `/uploads/…`.
-- Full solution builds with **0 warnings, 0 errors** on `net10.0`.
