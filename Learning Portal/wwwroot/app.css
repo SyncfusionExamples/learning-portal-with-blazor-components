@@ -1,0 +1,228 @@
+html, body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: #f4f6fa;
+}
+
+a, .btn-link { color: #0b5cab; }
+
+/* ==========================================================================
+   Design tokens (global — pages reference these too)
+   ========================================================================== */
+
+:root {
+    --lp-primary: #0b5cab;
+    --lp-primary-dark: #084a8c;
+    --lp-primary-light: #eaf3fc;
+    --lp-surface: #ffffff;
+    --lp-bg: #f4f6fa;
+    --lp-text: #1b2733;
+    --lp-text-muted: #5a6b7d;
+    --lp-border: #dce3ec;
+    --lp-radius: 10px;
+    --lp-sidebar-bg: #0f2438;
+    --lp-sidebar-text: #c4d3e1;
+    --lp-sidebar-active: #0b5cab;
+    --lp-sidebar-width: 264px;
+}
+
+/* Grid/flex children must be allowed to shrink, otherwise wide panels
+   (charts, grids) force horizontal page overflow and clip badges. */
+.card-grid > *,
+.app-main > * {
+    min-width: 0;
+}
+
+/* ==========================================================================
+   Shared page primitives (used across all pages — global so page
+   components pick them up; razor-component CSS isolation would not)
+   ========================================================================== */
+
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.page-title { margin: 0; font-size: 22px; font-weight: 700; color: var(--lp-text); }
+.page-subtitle { margin: 4px 0 0; font-size: 13px; color: var(--lp-text-muted); }
+.page-header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+.card-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.panel {
+    background: var(--lp-surface);
+    border: 1px solid var(--lp-border);
+    border-radius: var(--lp-radius);
+    padding: 18px;
+}
+
+.panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--lp-text);
+    margin: 0 0 12px;
+}
+
+.kpi-card {
+    background: var(--lp-surface);
+    border: 1px solid var(--lp-border);
+    border-radius: var(--lp-radius);
+    padding: 16px 18px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.kpi-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.kpi-value { font-size: 21px; font-weight: 700; color: var(--lp-text); line-height: 1.2; }
+.kpi-label { font-size: 12px; color: var(--lp-text-muted); margin-top: 2px; }
+.kpi-trend { font-size: 11.5px; margin-top: 6px; font-weight: 600; }
+.kpi-trend.up { color: #1a7f4b; }
+.kpi-trend.down { color: #c23b3b; }
+
+.chart-panel { min-height: 320px; }
+.chart-panel .e-chart { width: 100%; }
+
+/* --- Reports tab strip ---------------------------------------------------- */
+
+.report-tabs {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid var(--lp-border);
+    padding-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.report-tab {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--lp-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+    .report-tab:hover { background: var(--lp-primary-light); color: var(--lp-primary); }
+
+    .report-tab.active {
+        background: var(--lp-primary);
+        border-color: var(--lp-primary);
+        color: #fff;
+    }
+
+/* --- Shared page primitives (used across pages) ------------------------- */
+
+.hint {
+    font-size: 12.5px;
+    color: #5a6b7d;
+    line-height: 1.5;
+}
+
+.field-gap { margin-top: 12px; }
+
+.editor-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.feature-list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 13px;
+    color: #3c4b5c;
+    line-height: 1.9;
+}
+
+.toast-note {
+    margin-top: 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1a7f4b;
+    background: #e8f7ee;
+    border: 1px solid #bfe7cf;
+    padding: 10px 12px;
+    border-radius: 8px;
+}
+
+.toast-note.err {
+    color: #c23b3b;
+    background: #fdecec;
+    border-color: #f3c4c4;
+}
+
+.draft-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.draft-link {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    border-bottom: 1px solid #eef1f6;
+    padding: 9px 6px;
+    cursor: pointer;
+}
+
+.draft-link:hover { background: #f4f8fd; }
+.draft-title { font-size: 13px; color: #1b2733; font-weight: 600; }
+.draft-date { font-size: 11.5px; color: #5a6b7d; }
+
+.learner-toolbar-row { margin-bottom: 12px; }
+
+/* Scope bootstrap content rules to template leftovers we still rely on */
+.content { padding-top: 1.1rem; }
+
+h1:focus { outline: none; }
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 20px;
+    padding: 6px 1.2rem 6px 0.6rem;
+    position: fixed;
+    width: 26rem;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.blazor-error-boundary {
+    background: urldata('_content/Blazor.Web.Files/background.svg') 50% 50% no-repeat, #ffffff;
+}

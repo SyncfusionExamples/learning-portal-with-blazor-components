@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Professional Learning Portal — Syncfusion Blazor .NET 10 POC</title>
+    <base href="/learning-portal/" />
+    <ResourcePreloader />
+    <link rel="stylesheet" href="@Assets["_content/Syncfusion.Blazor.Themes/bootstrap5.css"]" />
+    <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["LearningPortal.styles.css"]" />
+    <ImportMap />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet />
+</head>
+
+<body>
+    <Routes />
+    <ReconnectModal />
+    <script src="@Assets["_content/Syncfusion.Blazor.Core/scripts/sf-utils.min.js"]"></script>
+    <script src="@Assets["_content/Syncfusion.Blazor.Core/scripts/syncfusion-blazor-base.min.js"]"></script>
+    <script src="@Assets["_content/Syncfusion.Blazor.Core/scripts/syncfusion-blazor.min.js"]"></script>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script>
+        // Downloads a base64-encoded file (used by the HTML-to-PDF export).
+        window.lpDownloadFile = function (fileName, mimeType, base64) {
+            const byteString = atob(base64);
+            const bytes = new Uint8Array(byteString.length);
+            for (let i = 0; i < byteString.length; i++) {
+                bytes[i] = byteString.charCodeAt(i);
+            }
+            const blob = new Blob([bytes], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+        };
+    </script>
+</body>
+
+</html>

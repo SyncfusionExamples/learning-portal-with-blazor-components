@@ -1,0 +1,76 @@
+@page "/query-builder"
+@rendermode InteractiveServer
+@inject SampleDataService Data
+
+<PageTitle>Query Builder — Professional Learning Portal</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Query Builder</h1>
+        <p class="page-subtitle">Build dynamic reporting queries with fields, operators, and AND/OR condition groups — results stream into the grid below.</p>
+    </div>
+    <div class="page-header-actions">
+        <SfButton IsPrimary="true" @onclick="ApplyQuery">Run Query</SfButton>
+        <SfButton @onclick="ResetQuery">Reset</SfButton>
+    </div>
+</div>
+
+<div class="panel" style="margin-bottom:16px">
+    <h2 class="panel-title">Query conditions</h2>
+    <SfQueryBuilder TValue="Enrollment" @ref="_queryBuilder" DataSource="@_allEnrollments" Width="100%">
+        <QueryBuilderColumns>
+            <QueryBuilderColumn Field="@nameof(Enrollment.LearnerName)" Label="Learner" Type="Syncfusion.Blazor.QueryBuilder.ColumnType.String"></QueryBuilderColumn>
+            <QueryBuilderColumn Field="@nameof(Enrollment.CourseTitle)" Label="Course" Type="Syncfusion.Blazor.QueryBuilder.ColumnType.String"></QueryBuilderColumn>
+            <QueryBuilderColumn Field="@nameof(Enrollment.Category)" Label="Category" Type="Syncfusion.Blazor.QueryBuilder.ColumnType.String"></QueryBuilderColumn>
+            <QueryBuilderColumn Field="@nameof(Enrollment.Instructor)" Label="Instructor" Type="Syncfusion.Blazor.QueryBuilder.ColumnType.String"></QueryBuilderColumn>
+            <QueryBuilderColumn Field="@nameof(Enrollment.District)" Label="District" Type="Syncfusion.Blazor.QueryBuilder.ColumnType.String"></QueryBuilderColumn>
+            <QueryBuilderColumn Field="@nameof(Enrollment.ProgressPercent)" Label="Progress %" Type="Syncfusion.Blazor.QueryBuilder.ColumnType.Number"></QueryBuilderColumn>
+            <QueryBuilderColumn Field="@nameof(Enrollment.EnrolledDate)" Label="Enrolled Date" Type="Syncfusion.Blazor.QueryBuilder.ColumnType.Date"></QueryBuilderColumn>
+            <QueryBuilderColumn Field="@nameof(Enrollment.Completed)" Label="Completed" Type="Syncfusion.Blazor.QueryBuilder.ColumnType.Boolean"></QueryBuilderColumn>
+        </QueryBuilderColumns>
+    </SfQueryBuilder>
+</div>
+
+<div class="panel">
+    <h2 class="panel-title">Filtered results <span class="topbar-badge">@_filtered.Count of @_allEnrollments.Count rows</span></h2>
+    <SfGrid TValue="Enrollment" DataSource="@_filtered" AllowPaging="true" AllowSorting="true">
+        <GridPageSettings PageSize="10"></GridPageSettings>
+        <GridColumns>
+            <GridColumn Field="@nameof(Enrollment.LearnerName)" HeaderText="Learner" Width="150"></GridColumn>
+            <GridColumn Field="@nameof(Enrollment.CourseTitle)" HeaderText="Course" Width="240"></GridColumn>
+            <GridColumn Field="@nameof(Enrollment.Category)" HeaderText="Category" Width="120"></GridColumn>
+            <GridColumn Field="@nameof(Enrollment.Instructor)" HeaderText="Instructor" Width="150"></GridColumn>
+            <GridColumn Field="@nameof(Enrollment.District)" HeaderText="District" Width="130"></GridColumn>
+            <GridColumn Field="@nameof(Enrollment.EnrolledDate)" HeaderText="Enrolled" Format="d" Type="Syncfusion.Blazor.Grids.ColumnType.DateTime" Width="110"></GridColumn>
+            <GridColumn Field="@nameof(Enrollment.ProgressPercent)" HeaderText="Progress %" Width="110"></GridColumn>
+            <GridColumn Field="@nameof(Enrollment.Completed)" HeaderText="Completed" Width="110" DisplayAsCheckBox="true"></GridColumn>
+        </GridColumns>
+    </SfGrid>
+</div>
+
+@code {
+    private SfQueryBuilder<Enrollment>? _queryBuilder;
+    private List<Enrollment> _allEnrollments = new();
+    private List<Enrollment> _filtered = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _allEnrollments = await Data.GetEnrollmentsAsync();
+        _filtered = _allEnrollments;
+    }
+
+    private async Task ApplyQuery()
+    {
+        if (_queryBuilder is null) return;
+        var result = await _queryBuilder.GetFilteredRecordsAsync();
+        _filtered = result?.Cast<Enrollment>().ToList() ?? _allEnrollments;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void ResetQuery()
+    {
+        _queryBuilder?.Reset();
+        _filtered = _allEnrollments;
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,148 @@
+@page "/learning-content"
+@rendermode InteractiveServer
+@using System.Text
+@inject SampleDataService Data
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<PageTitle>Learning Content — Professional Learning Portal</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Learning Content</h1>
+        <p class="page-subtitle">Basic rich text editor for learners and professors, with one-click PDF export.</p>
+    </div>
+    <div class="page-header-actions">
+        <SfButton @onclick="SaveDraft">Save Draft</SfButton>
+    </div>
+</div>
+
+<div class="card-grid" style="grid-template-columns:1fr 320px">
+    <div class="panel">
+        <h2 class="panel-title">@(string.IsNullOrWhiteSpace(_title) ? "Untitled content" : _title)</h2>
+        <div class="learner-toolbar-row">
+            <SfTextBox @bind-Value="_title" Placeholder="Content title" Width="100%"></SfTextBox>
+        </div>
+        <SfRichTextEditor @ref="_rte" @bind-Value="_html" Height="430" Placeholder="Write your learning content here…">
+            <RichTextEditorToolbarSettings Items="@BasicToolbar"></RichTextEditorToolbarSettings>
+            <RichTextEditorExportPdf ServiceUrl="https://blazor.syncfusion.com/services/production/api/RichTextEditor/ExportToPdf" FileName="LearningContent.pdf"></RichTextEditorExportPdf>
+            <p>Describe what you learned in this session, include <b>key takeaways</b>, or draft an assignment brief.</p>
+        </SfRichTextEditor>
+        @if (!string.IsNullOrEmpty(_feedback))
+        {
+            <div class="toast-note @(_feedbackIsError ? "err" : "")" role="status">@_feedback</div>
+        }
+    </div>
+    <div>
+        <div class="panel" style="margin-bottom:16px">
+            <h2 class="panel-title">Saved drafts</h2>
+            @if (_drafts.Count == 0)
+            {
+                <p class="hint">No saved drafts yet. Write something and click <b>Save Draft</b>.</p>
+            }
+            else
+            {
+                <ul class="draft-list">
+                    @foreach (var draft in _drafts)
+                    {
+                        <li>
+                            <button type="button" class="draft-link" @onclick="() => LoadDraft(draft)">
+                                <span class="draft-title">@draft.Title</span>
+                                <span class="draft-date">@draft.LastUpdated.ToString("g")</span>
+                            </button>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+        <div class="panel">
+            <h2 class="panel-title">About this editor</h2>
+            <ul class="feature-list">
+                <li>Simplified toolbar: bold, italic, underline, lists, alignment</li>
+                <li>Images and tables are preserved in PDF output</li>
+                <li>Built-in RTE “Export to PDF” toolbar command (server-side DocIO rendering)</li>
+                <li>Same SfRichTextEditor component as the content team page</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@code {
+    private SfRichTextEditor? _rte;
+    private string _html = string.Empty;
+    private string _title = string.Empty;
+    private string? _feedback;
+    private bool _feedbackIsError;
+    private List<LearningContentItem> _drafts = [];
+    private LearningContentItem? _current;
+
+    private List<ToolbarItemModel> BasicToolbar =>
+    [
+        new ToolbarItemModel { Command = ToolbarCommand.Bold },
+        new ToolbarItemModel { Command = ToolbarCommand.Italic },
+        new ToolbarItemModel { Command = ToolbarCommand.Underline },
+        new ToolbarItemModel { Command = ToolbarCommand.Separator },
+        new ToolbarItemModel { Command = ToolbarCommand.Formats },
+        new ToolbarItemModel { Command = ToolbarCommand.Alignments },
+        new ToolbarItemModel { Command = ToolbarCommand.Separator },
+        new ToolbarItemModel { Command = ToolbarCommand.NumberFormatList },
+        new ToolbarItemModel { Command = ToolbarCommand.BulletFormatList },
+        new ToolbarItemModel { Command = ToolbarCommand.Separator },
+        new ToolbarItemModel { Command = ToolbarCommand.CreateLink },
+        new ToolbarItemModel { Command = ToolbarCommand.Image },
+        new ToolbarItemModel { Command = ToolbarCommand.CreateTable },
+        new ToolbarItemModel { Command = ToolbarCommand.Separator },
+        new ToolbarItemModel { Command = ToolbarCommand.Undo },
+        new ToolbarItemModel { Command = ToolbarCommand.Redo },
+        new ToolbarItemModel { Command = ToolbarCommand.ClearFormat },
+        new ToolbarItemModel { Command = ToolbarCommand.Separator },
+        new ToolbarItemModel { Command = ToolbarCommand.ExportPdf },
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var contents = await Data.GetContentsAsync();
+        _drafts = contents.Where(c => c.Status != "Published").ToList();
+    }
+
+    private async Task SaveDraft()
+    {
+        if (string.IsNullOrWhiteSpace(_title))
+        {
+            ShowFeedback("Enter a title before saving.", isError: true);
+            return;
+        }
+
+        var item = _current ?? new LearningContentItem { Status = "Draft", Author = "Learner" };
+        item.Title = _title.Trim();
+        item.HtmlContent = _html;
+        item.Summary = StripHtml(_html);
+        Data.UpsertContent(item);
+        _current = item;
+
+        var contents = await Data.GetContentsAsync();
+        _drafts = contents.Where(c => c.Status != "Published").ToList();
+        ShowFeedback($"Draft “{item.Title}” saved.");
+    }
+
+    private void LoadDraft(LearningContentItem draft)
+    {
+        _current = draft;
+        _title = draft.Title;
+        _html = draft.HtmlContent;
+        _feedback = null;
+    }
+
+    private void ShowFeedback(string message, bool isError = false)
+    {
+        _feedback = message;
+        _feedbackIsError = isError;
+    }
+
+    private static string StripHtml(string html)
+    {
+        var plain = System.Text.RegularExpressions.Regex.Replace(html ?? "", "<[^>]+>", " ");
+        plain = System.Net.WebUtility.HtmlDecode(plain);
+        return System.Text.RegularExpressions.Regex.Replace(plain, @"\s+", " ").Trim();
+    }
+}
